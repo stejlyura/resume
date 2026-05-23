@@ -1,0 +1,140 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 40% 98%; /* Slate 50 (#f8fafc) */
+    --foreground: 222.2 84% 4.9%; /* Slate 950 (#020617) */
+
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Indigo 600 (#4f46e5) - primary brand color */
+    --primary: 243.4 75.4% 58.6%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%; /* Slate 100 (#f1f5f9) */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Slate 500 (#64748b) */
+
+    /* Blue 600 (#2563eb) - accent details */
+    --accent: 221.2 83.2% 53.3%;
+    --accent-foreground: 210 40% 98%;
+
+    /* Red 600 (#dc2626) */
+    --destructive: 0 72.2% 50.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Green 600 (#16a34a) */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%; /* Slate 200 (#e2e8f0) */
+    --input: 214.3 31.8% 91.4%;
+    --ring: 243.4 75.4% 58.6%;
+
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%; /* Slate 950 (#020617) */
+    --foreground: 210 40% 98%; /* Slate 50 (#f8fafc) */
+
+    --card: 222.2 84% 6.9%; /* Darker slate for contrast */
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Indigo 500 (#6366f1) */
+    --primary: 238.9 83.5% 66.7%;
+    --primary-foreground: 222.2 84% 4.9%;
+
+    --secondary: 217.2 32.6% 17.5%; /* Slate 800 */
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%; /* Slate 400 */
+
+    /* Blue 500 (#3b82f6) */
+    --accent: 217.2 91.2% 59.8%;
+    --accent-foreground: 222.2 84% 4.9%;
+
+    /* Red 500 (#ef4444) */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Green 500 (#22c55e) */
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 222.2 84% 4.9%;
+
+    --border: 217.2 32.6% 17.5%; /* Slate 800 */
+    --input: 217.2 32.6% 17.5%;
+    --ring: 238.9 83.5% 66.7%;
+  }
+}
+
+/* Map HSL variables to Tailwind config compatible color values */
+@layer base {
+  :root {
+    --background-color: hsl(var(--background));
+    --foreground-color: hsl(var(--foreground));
+    --border-color: hsl(var(--border));
+    --input-color: hsl(var(--input));
+    --ring-color: hsl(var(--ring));
+    --primary-color: hsl(var(--primary));
+    --primary-foreground-color: hsl(var(--primary-foreground));
+    --secondary-color: hsl(var(--secondary));
+    --secondary-foreground-color: hsl(var(--secondary-foreground));
+    --destructive-color: hsl(var(--destructive));
+    --destructive-foreground-color: hsl(var(--destructive-foreground));
+    --success-color: hsl(var(--success));
+    --success-foreground-color: hsl(var(--success-foreground));
+    --muted-color: hsl(var(--muted));
+    --muted-foreground-color: hsl(var(--muted-foreground));
+    --accent-color: hsl(var(--accent));
+    --accent-foreground-color: hsl(var(--accent-foreground));
+    --card-color: hsl(var(--card));
+    --card-foreground-color: hsl(var(--card-foreground));
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Base custom animations & micro-interactions */
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Premium scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30 transition-colors;
+}
