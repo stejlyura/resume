@@ -20,6 +20,7 @@ export function HeaderEditor() {
       phone: '',
       telegram: '',
       github: '',
+      linkedin: '',
       website: '',
     },
   });
@@ -31,6 +32,7 @@ export function HeaderEditor() {
   const phone = watch('phone');
   const telegram = watch('telegram');
   const github = watch('github');
+  const linkedin = watch('linkedin');
   const website = watch('website');
 
   // Reset form values when active branch changes
@@ -51,6 +53,7 @@ export function HeaderEditor() {
           phone !== activeHeader.phone ||
           telegram !== activeHeader.telegram ||
           github !== activeHeader.github ||
+          linkedin !== activeHeader.linkedin ||
           website !== activeHeader.website;
 
         if (hasChanged) {
@@ -61,6 +64,7 @@ export function HeaderEditor() {
             phone: phone || '',
             telegram: telegram || '',
             github: github || '',
+            linkedin: linkedin || '',
             website: website || '',
           });
         }
@@ -68,7 +72,7 @@ export function HeaderEditor() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [fullName, title, email, phone, telegram, github, website, updateHeader, activeHeader]);
+  }, [fullName, title, email, phone, telegram, github, linkedin, website, updateHeader, activeHeader]);
 
   return (
     <Card className="w-full border-border bg-card shadow-sm">
@@ -152,13 +156,24 @@ export function HeaderEditor() {
           </div>
 
           {/* Website */}
-          <div className="md:col-span-2">
+          <div>
             <Input
               id="website"
               label="Личный сайт / Портфолио"
               placeholder="https://ivan.dev"
               className="pl-3"
               {...register('website')}
+            />
+          </div>
+
+          {/* LinkedIn */}
+          <div>
+            <Input
+              id="linkedin"
+              label="LinkedIn (username или ссылка)"
+              placeholder="linkedin.com/in/ivan"
+              className="pl-3"
+              {...register('linkedin')}
             />
           </div>
         </div>

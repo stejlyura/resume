@@ -5,6 +5,7 @@ export interface ResumeHeader {
   phone: string;
   telegram: string;
   github: string;
+  linkedin: string;
   website: string;
 }
 

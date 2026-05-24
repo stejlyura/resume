@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer';
 import type { ResumeData } from '@/entities/resume/types';
 import { markdownParser } from '@/shared/lib/markdownParser';
 
@@ -116,6 +116,13 @@ export function MarkdownText({ content, style }: MarkdownTextProps) {
   );
 }
 
+const formatUrl = (url?: string): string => {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
 interface ResumePDFDocumentProps {
   data: ResumeData;
 }
@@ -137,7 +144,13 @@ export function ResumePDFDocument({ data }: ResumePDFDocumentProps) {
         {/* Header Section */}
         <View style={styles.headerContainer}>
           {data.header.fullName ? (
-            <Text style={styles.fullName}>{data.header.fullName}</Text>
+            data.header.linkedin ? (
+              <Link src={formatUrl(data.header.linkedin)} style={{ textDecoration: 'none' }}>
+                <Text style={styles.fullName}>{data.header.fullName}</Text>
+              </Link>
+            ) : (
+              <Text style={styles.fullName}>{data.header.fullName}</Text>
+            )
           ) : null}
           {data.header.title ? (
             <Text style={styles.jobTitle}>{data.header.title}</Text>

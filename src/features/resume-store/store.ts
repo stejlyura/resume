@@ -38,6 +38,7 @@ export const createEmptyResumeData = (): ResumeData => ({
     phone: '',
     telegram: '',
     github: '',
+    linkedin: '',
     website: '',
   },
   summary: '',
