@@ -9,10 +9,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Eye,
-  Edit3
+  Edit3,
+  Lock,
+  User,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 
-import { useResumeStore, createEmptyResumeData } from '@/features/resume-store/store';
+import { useResumeStore, createEmptyResumeData, getApiUrl } from '@/features/resume-store/store';
 import {
   HeaderEditor,
   SummaryEditor,
@@ -23,7 +27,185 @@ import { BranchTreeVisualizer } from '@/widgets/branch-visualizer';
 import { ResumePDFDocument, DownloadPDFButton } from '@/features/pdf-export';
 import { cn } from '@/shared/lib/utils';
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/20 rounded-full blur-3xl -z-10 animate-pulse-subtle" />
+      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/20 rounded-full blur-3xl -z-10 animate-pulse-subtle" />
+
+      <div className="text-center space-y-4">
+        <div className="relative inline-flex items-center justify-center p-4 rounded-3xl bg-card border border-border shadow-xl">
+          <GitBranch className="h-10 w-10 text-primary animate-pulse" />
+          <div className="absolute inset-0 rounded-3xl border border-primary/30 animate-ping opacity-25" />
+        </div>
+        <h2 className="bg-gradient-to-r from-primary via-indigo-500 to-accent bg-clip-text text-transparent font-extrabold text-2xl tracking-tight leading-none">
+          GitResume
+        </h2>
+        <p className="text-xs text-muted-foreground font-medium animate-pulse">Проверка авторизации...</p>
+      </div>
+    </div>
+  );
+}
+
+function LoginScreen({ onLoginSuccess }: { onLoginSuccess: (token: string) => void }) {
+  const [login, setLogin] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch(getApiUrl('/api/login'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ login, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem('resume_auth_token', data.token);
+        onLoginSuccess(data.token);
+      } else {
+        setError(data.error || 'Неверное имя пользователя или пароль');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Ошибка сети. Убедитесь, что сервер запущен.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden font-sans">
+      {/* Decorative gradient blur spheres */}
+      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/20 rounded-full blur-3xl -z-10" style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-accent/20 rounded-full blur-3xl -z-10" style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+
+      {/* Glassmorphic login card */}
+      <div className="w-full max-w-md bg-card/65 backdrop-blur-md border border-border/80 rounded-3xl shadow-2xl p-8 relative overflow-hidden transition-all duration-300 hover:border-primary/30">
+        
+        {/* Branding header */}
+        <div className="flex flex-col items-center mb-8 text-center">
+          <div className="p-3 rounded-2xl bg-gradient-to-tr from-primary to-accent text-primary-foreground shadow-lg shadow-primary/20 flex items-center justify-center mb-3">
+            <GitBranch className="h-6 w-6" />
+          </div>
+          <h2 className="bg-gradient-to-r from-primary via-indigo-500 to-accent bg-clip-text text-transparent font-extrabold text-2xl tracking-tight leading-none">
+            GitResume
+          </h2>
+          <span className="text-xs text-muted-foreground mt-1.5 font-medium">
+            Панель управления резюме
+          </span>
+        </div>
+
+        <h3 className="text-lg font-bold text-foreground mb-6 text-center">Авторизация</h3>
+
+        {error && (
+          <div className="mb-5 p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-muted-foreground/80 tracking-wide block uppercase" htmlFor="login">
+              Имя пользователя
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <User className="h-4 w-4" />
+              </span>
+              <input
+                id="login"
+                type="text"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                placeholder="Введите имя пользователя"
+                required
+                className="w-full bg-secondary/50 border border-border/60 hover:border-border rounded-xl py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-muted-foreground/80 tracking-wide block uppercase" htmlFor="password">
+              Пароль
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <Lock className="h-4 w-4" />
+              </span>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Введите пароль"
+                required
+                className="w-full bg-secondary/50 border border-border/60 hover:border-border rounded-xl py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-2 bg-gradient-to-r from-primary to-accent hover:from-primary/95 hover:to-accent/95 text-primary-foreground shadow-lg shadow-primary/10 hover:shadow-primary/20 disabled:opacity-50 disabled:shadow-none transition-all duration-300 font-bold py-3.5 rounded-xl flex items-center justify-center gap-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2 focus:ring-offset-background active:scale-[0.98]"
+          >
+            {loading ? (
+              <RefreshCw className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <LogIn className="h-4 w-4" />
+                <span>Войти</span>
+              </>
+            )}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  // Verify token on mount
+  useEffect(() => {
+    const verifyToken = async () => {
+      const token = localStorage.getItem('resume_auth_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        return;
+      }
+      try {
+        const response = await fetch(getApiUrl('/api/auth/verify'), {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          setIsAuthenticated(true);
+        } else {
+          localStorage.removeItem('resume_auth_token');
+          setIsAuthenticated(false);
+        }
+      } catch (err) {
+        console.error('Failed to verify token:', err);
+        setIsAuthenticated(false);
+      }
+    };
+    verifyToken();
+  }, []);
+
   const { activeBranchId, branches, saveStatus, initializeState } = useResumeStore();
   const activeBranch = branches[activeBranchId];
 
@@ -53,6 +235,8 @@ export function App() {
 
   // Initial Data Fetching from MongoDB Atlas via API
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const defaultState = {
       branches: {
         main: {
@@ -68,11 +252,13 @@ export function App() {
 
     const syncDefaultState = async () => {
       try {
+        const token = localStorage.getItem('resume_auth_token');
         useResumeStore.getState().setSaveStatus('saving');
-        const response = await fetch('http://localhost:3001/api/resume', {
+        const response = await fetch(getApiUrl('/api/resume'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
             branches: defaultState.branches,
@@ -92,7 +278,12 @@ export function App() {
 
     const fetchInitialData = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/resume');
+        const token = localStorage.getItem('resume_auth_token');
+        const response = await fetch(getApiUrl('/api/resume'), {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         if (response.ok) {
           const data = await response.json();
           if (data && data.branches && Object.keys(data.branches).length > 0 && data.activeBranchId) {
@@ -103,7 +294,11 @@ export function App() {
             await syncDefaultState();
           }
         } else {
-          // Server error (e.g. 500)
+          // Server error (e.g. 500 or 401)
+          if (response.status === 401) {
+            localStorage.removeItem('resume_auth_token');
+            setIsAuthenticated(false);
+          }
           initializeState(defaultState);
           useResumeStore.getState().setSaveStatus('error');
         }
@@ -115,7 +310,15 @@ export function App() {
     };
 
     fetchInitialData();
-  }, [initializeState]);
+  }, [initializeState, isAuthenticated]);
+
+  if (isAuthenticated === null) {
+    return <LoadingScreen />;
+  }
+
+  if (isAuthenticated === false) {
+    return <LoginScreen onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300 pb-12 font-sans selection:bg-primary/20">
@@ -182,6 +385,19 @@ export function App() {
               ) : (
                 <Sun className="h-4 w-4 transition-all duration-300" />
               )}
+            </button>
+
+            {/* Logout Button */}
+            <button
+              onClick={() => {
+                localStorage.removeItem('resume_auth_token');
+                setIsAuthenticated(false);
+              }}
+              className="p-2 rounded-xl border border-border hover:bg-rose-500/10 hover:text-rose-500 hover:border-rose-500/20 text-muted-foreground transition-all duration-200 relative focus:outline-none focus:ring-2 focus:ring-rose-500/40 focus:ring-offset-1 focus:ring-offset-background"
+              title="Выйти"
+              aria-label="Logout"
+            >
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>

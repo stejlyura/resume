@@ -343,7 +343,10 @@ export const useResumeStore = create<ResumeStore>((set) => ({
 }));
 
 // Auto-save synchronization with MongoDB Atlas via Express backend
-const API_URL = 'http://localhost:3001/api/resume';
+export const getApiUrl = (path: string) => {
+  const baseUrl = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001' : '');
+  return `${baseUrl}${path}`;
+};
 
 const debounce = <T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void => {
   let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -355,11 +358,17 @@ const debounce = <T extends (...args: any[]) => void>(func: T, wait: number): (.
 
 const saveToServer = debounce(async (state: { branches: any; activeBranchId: string }) => {
   try {
-    const response = await fetch(API_URL, {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('resume_auth_token') : null;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(getApiUrl('/api/resume'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify({
         branches: state.branches,
         activeBranchId: state.activeBranchId,
